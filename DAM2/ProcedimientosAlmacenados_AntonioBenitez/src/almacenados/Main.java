@@ -17,8 +17,6 @@ public class Main
 	{
 		// VARIABLES ------------------------------||
 		Properties props = new Properties();
-		PreparedStatement stmt;
-		ResultSet rs;
 		Scanner entrada = new Scanner(System.in);
 		int respuesta = 0, entradas;
 		String nombre, contrasena, completo;
