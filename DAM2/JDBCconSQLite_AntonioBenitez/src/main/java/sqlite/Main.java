@@ -15,6 +15,7 @@ public class Main
 		// VARIABLES ------------------------------||
 		Scanner entrada = new Scanner(System.in);
 		int respuesta = 0, numTablas = 0, filas = 0;
+		String equipoEscogido;
 		// PROGRAMA -------------------------------||
 		String url = String.format("jdbc:sqlite:c:/Users/dam2/Documents/DB.Browser.for.SQLite-v3.13.1-win64/databases/Mantenimiento.db");
 		System.out.println("Trying SQL Connection ...");
@@ -37,19 +38,57 @@ public class Main
 								+ "\n4. DELETE un EQUIPO existente"
 								+ "\n5. Volver al Menú Principal", entrada, 1, 5);
 						switch(respuesta) {
-						case 1:
-							numTablas = selectEquipos(conn);
-							if(numTablas == 0) {
+						case 1: // SELECT todos EQUIPOS		--------------------------------------
+							ArrayList<String> codigosEquipos = Common.selectEquipos(conn,true);
+							if(codigosEquipos.size() == 0) {
 								System.out.println("No hay ningún EQUIPO registrado en la base de datos.");
 							}
 							break;
-						case 2:
+						case 2: // INSERT nuevo EQUIPO		--------------------------------------
+							String[] datosEquipo = new String[3];
+							System.out.println("Introduzca el Código del EQUIPO a insertar.");
+							datosEquipo[0] = entrada.nextLine();
+							System.out.println("Introduzca el Modelo del EQUIPO a insertar.");
+							datosEquipo[1] = entrada.nextLine();
+							System.out.println("Introduzca la Descripción del EQUIPO a insertar.");
+							datosEquipo[2] = entrada.nextLine();
+							if(Common.selectEquipos(conn,false).contains(datosEquipo[0])) {
+								System.out.println("ERROR: El Código del EQUIPO a insertar ya está registrado.");
+							}else {
+								filas = Common.insertarEquipo(conn,datosEquipo);
+								System.out.printf("Filas insertadas: %d\n",filas);
+							}
 							break;
-						case 3:
+						case 3: // UPDATE EQUIPO			--------------------------------------
+							equipoEscogido = Common.pickEquipo(conn,entrada);
+							try(PreparedStatement update = conn.prepareStatement("UPDATE equipos SET modelo = ?, descripcion = ? WHERE codigo = ?")){
+								System.out.println("Introduzca el nuevo campo Modelo.");
+								update.setString(1, entrada.nextLine());
+								System.out.println("Introduzca el nuevo campo Descripción.");
+								update.setString(2, entrada.nextLine());
+								update.setString(3, equipoEscogido);
+								filas = update.executeUpdate();
+								System.out.printf("Filas insertadas: %d\n",filas);
+							}catch(SQLException e) {
+								System.out.println(e.getMessage());
+							}
 							break;
-						case 4:
+						case 4: // DELETE EQUIPO			--------------------------------------
+							equipoEscogido = Common.pickEquipo(conn,entrada);
+							boolean confirmDelete = Common.booleanCheck("¿Está seguro de que quiere borrar este EQUIPO? (SI/NO)",entrada);
+							if(confirmDelete) {
+								try(PreparedStatement delete = conn.prepareStatement("DELETE FROM equipos WHERE codigo = ?")){
+									delete.setString(1, equipoEscogido);
+									filas = delete.executeUpdate();
+									System.out.printf("Filas insertadas: %d\n",filas);
+								}catch(SQLException e) {
+									System.out.println(e.getMessage());
+								}
+							}else {
+								System.out.println("Cancelando operación ...");
+							}
 							break;
-						case 5:
+						case 5: // Volver Menu Principal	--------------------------------------
 							System.out.println("Volviendo al Menú Principal ...");
 							break;
 						}
@@ -63,7 +102,7 @@ public class Main
 								+ "\n2. Consulta de PIEZAS"
 								+ "\n3. Volver al Menú Principal", entrada, 1, 3);
 						switch(respuesta) {
-						case 1:
+						case 1: // Alta nueva PIEZA			--------------------------------------
 							String[] datosPieza = new String[5];
 							System.out.println("Introduzca el código de la nueva PIEZA.");
 							datosPieza[0] = entrada.nextLine();
@@ -74,55 +113,35 @@ public class Main
 							datosPieza[3] = String.valueOf(Common.inputInt("Introduzca las unidades de la nueva PIEZA.",entrada));
 							System.out.println("Introduzca el código del EQUIPO de la nueva PIEZA.");
 							datosPieza[4] = entrada.nextLine();
-							filas = insertarPieza(conn,datosPieza);
-							System.out.printf("Filas insertadas: %d\n",filas);
-							break;
-						case 2:
-							try(PreparedStatement piezas = conn.prepareStatement("SELECT * FROM piezas");
-									ResultSet piezasResult = piezas.executeQuery()){
-								numTablas = 0;
-								while(piezasResult.next()) {
-									System.out.printf("Código: %s\t\tTipo: %s\t\tDescripción: %s\t\tUnidades: %d\tCódigo EQUIPO: %s\n",
-											piezasResult.getString("codigo"),piezasResult.getString("tipo"),
-											piezasResult.getString("descripcion"),piezasResult.getInt("unidades"),
-											piezasResult.getString("equipo_codigo"));
-									numTablas++;
-								}
-							}catch(SQLException e) {
-								System.out.println(e.getMessage());
+							if(Common.selectPiezas(conn,false).contains(datosPieza[0])) {
+								System.out.println("ERROR: El Código de la PIEZA a insertar ya está registrado.");
+							}else if(Common.selectEquipos(conn,false).contains(datosPieza[4]) == false) {
+								System.out.println("ERROR: El Código de EQUIPO de la PIEZA a insertar no está registrado.");
+							}
+							else {
+								filas = Common.insertarPieza(conn,datosPieza);
+								System.out.printf("Filas insertadas: %d\n",filas);
 							}
 							break;
-						case 3:
+						case 2: // Consulta PIEZAS			--------------------------------------
+							ArrayList<String> codigosPiezas = Common.selectPiezas(conn,true);
+							if(codigosPiezas.size() == 0) {
+								System.out.println("No hay ninguna PIEZA registrada en la base de datos.");
+							}
+							break;
+						case 3: // Volver Menu Principal	--------------------------------------
 							System.out.println("Volviendo al Menú Principal ...");
 							break;
 						}
 					}
 					break;
 				case 3: // CONSULTA EQUIPO PIEZAS	======================================================================================================
-					String sql = "SELECT * FROM equipos";
-					try(PreparedStatement stmt = conn.prepareStatement(sql);
-						ResultSet rs = stmt.executeQuery()){
-						ArrayList<String> codigos = new ArrayList<String>();
-						int contador = 1;
-						while(rs.next()) {
-							System.out.printf("%d. Código: %s\t\tModelo: %s\t\tDescripción: %s\n", contador,
-									rs.getString("codigo"),rs.getString("modelo"),rs.getString("descripcion"));
-							codigos.add(rs.getString("codigo"));
-							contador++;
-						}
-						if(codigos.isEmpty()) {
-							System.out.println("La tabla EQUIPOS está vacía.");
-						}else {
-							PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM piezas WHERE equipo_codigo = ?");
-							int escogido;
-							do{
-								escogido = Common.inputInt("Escoja el Equipo para mostrar sus Piezas", entrada);
-								System.out.println(escogido);
-								if(escogido < 1 || escogido > contador-1) {
-									System.out.println("Opción no válida, inténtelo de nuevo.");
-								}
-							}while(escogido < 1 || escogido > contador-1);
-							stmt2.setString(1, codigos.get(escogido-1));
+					equipoEscogido = Common.pickEquipo(conn,entrada);
+					if(equipoEscogido.isBlank()) {
+						System.out.println("No se ha encontrado ningún EQUIPO registrado, cancelando operación ...");
+					}else {
+						try(PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM piezas WHERE equipo_codigo = ?")){
+							stmt2.setString(1,equipoEscogido);
 							ResultSet rs2 = stmt2.executeQuery();
 							numTablas = 0;
 							while(rs2.next()) {
@@ -135,9 +154,9 @@ public class Main
 							}
 							stmt2.close();
 							rs2.close();
+						}catch(SQLException e) {
+							System.out.println(e.getMessage());
 						}
-					}catch(SQLException e) {
-						System.out.println(e.getMessage());
 					}
 					break;
 				case 4: // APAGAR PROGRAMA			======================================================================================================
@@ -149,37 +168,5 @@ public class Main
 			System.out.println(e.getMessage());
 		}
 		entrada.close();
-	}
-	
-	//SELECT EQUIPOS - Devuelve el número de tablas recibidas al ejecutar SELECT sobre la tabla EQUIPOS
-	private static int selectEquipos(Connection conn) {
-		int tablas = 0;
-		try(PreparedStatement select = conn.prepareStatement("SELECT * FROM equipos");
-			ResultSet rsSelect = select.executeQuery()){
-			while(rsSelect.next()) {
-				System.out.printf("Código: %s\t\tModelo: %s\t\tDescripción: %s\n",
-						rsSelect.getString("codigo"),rsSelect.getString("modelo"),rsSelect.getString("descripcion"));
-				tablas++;
-			}
-		}catch(SQLException e) {
-			System.out.println(e.getMessage());
-		}
-		return tablas;
-	}
-	
-	//INSERTAR PIEZA - Devuelve las filas insertadas al ejecutar un INSERT sobre la tabla PIEZAS
-	private static int insertarPieza(Connection conn, String[] datos) {
-		int filasInsertadas = 0;
-		try(PreparedStatement insertPieza = conn.prepareStatement("INSERT INTO piezas VALUES(?,?,?,?,?)");){
-			insertPieza.setString(1, datos[0]);
-			insertPieza.setString(2, datos[1]);
-			insertPieza.setString(3, datos[2]);
-			insertPieza.setInt(4, Integer.parseInt(datos[3]));
-			insertPieza.setString(5, datos[4]);
-			filasInsertadas = insertPieza.executeUpdate();
-		}catch(SQLException e) {
-			System.out.println(e.getMessage());
-		}
-		return filasInsertadas;
 	}
 }
