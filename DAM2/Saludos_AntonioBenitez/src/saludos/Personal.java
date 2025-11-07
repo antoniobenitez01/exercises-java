@@ -5,10 +5,10 @@ public class Personal extends Thread
 	private static boolean jefeHere = false;
 	
 	private String nombre;
-	private Saludo saludo;
+	private String saludo;
 	private boolean esJefe;
 	
-	public Personal(String nombre, Saludo saludo,boolean esJefe) {
+	public Personal(String nombre, String saludo,boolean esJefe) {
 		this.nombre = nombre;
 		this.saludo = saludo;
 		this.esJefe = esJefe;
