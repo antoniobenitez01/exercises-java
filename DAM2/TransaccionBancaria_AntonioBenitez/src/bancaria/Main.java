@@ -59,7 +59,7 @@ public class Main {
 				}catch (SQLException sqle) { // CATCH (SQL EXCEPTION) --------------
 					try {
 						conn.rollback();
-						System.out.println("Transacción revertida debido a un error.\n" + sqle.getMessage());
+						System.out.printf("Transacción revertida debido a un error:\t%s\n",sqle.getMessage());
 					} catch (SQLException rollbackEx) {
 						System.out.println(rollbackEx.getMessage());
 					}
