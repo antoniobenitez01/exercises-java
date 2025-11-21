@@ -7,4 +7,7 @@
     <fullyQualifiedTypeName name="java.sql.DriverManager"/>
     <fullyQualifiedTypeName name="java.sql.SQLException"/>
     <fullyQualifiedTypeName name="viajebus.ReservaDAO"/>
+    <fullyQualifiedTypeName name="java.util.Arrays"/>
+    <fullyQualifiedTypeName name="net.hibernate.util.HibernateUtil"/>
+    <fullyQualifiedTypeName name="net.hibernate.dao.ContactoDAO"/>
 </qualifiedTypeNameHistroy>
