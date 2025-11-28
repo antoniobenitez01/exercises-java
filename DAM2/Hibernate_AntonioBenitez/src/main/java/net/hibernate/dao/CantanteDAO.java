@@ -8,7 +8,7 @@ import org.hibernate.Transaction;
 import net.hibernate.entity.Contacto;
 import net.hibernate.util.HibernateUtil;
 
-public class ContactoDAO 
+public class CantanteDAO 
 {
 	//SELECT CONTACTO - Devuelve todos los Contactos registrados en la BBDD
 	public static List<Contacto> selectContacto() {

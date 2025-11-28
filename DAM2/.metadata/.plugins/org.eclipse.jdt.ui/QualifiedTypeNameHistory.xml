@@ -10,4 +10,5 @@
     <fullyQualifiedTypeName name="java.util.Arrays"/>
     <fullyQualifiedTypeName name="net.hibernate.util.HibernateUtil"/>
     <fullyQualifiedTypeName name="net.hibernate.dao.ContactoDAO"/>
+    <fullyQualifiedTypeName name="net.hibernate.dao.CancionDAO"/>
 </qualifiedTypeNameHistroy>

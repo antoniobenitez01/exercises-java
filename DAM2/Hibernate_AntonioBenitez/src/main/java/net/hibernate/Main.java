@@ -7,7 +7,7 @@ import java.util.Scanner;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import net.hibernate.dao.ContactoDAO;
+import net.hibernate.dao.CantanteDAO;
 import net.hibernate.entity.Contacto;
 import net.hibernate.util.HibernateUtil;
 
@@ -49,7 +49,7 @@ public class Main
 		List<Contacto> agenda;
 		while(respuesta != 5) {
 			System.out.println("\nActualizando datos ...");
-			agenda = ContactoDAO.selectContacto();
+			agenda = CantanteDAO.selectContacto();
 			respuesta = Common.menu("\n=== MENÚ PRINCIPAL CRUD ===\n"
 					+ "\n1. SELECT Contacto"
 					+ "\n2. INSERT Contacto"
@@ -75,7 +75,7 @@ public class Main
 				double altura = Common.inputDouble("Introduzca la Altura del nuevo Contacto", entrada);
 				try {
 					Contacto nuevoContacto = new Contacto(nombre,direccion,email,telefono,altura);
-					ContactoDAO.updateContacto(nuevoContacto);
+					CantanteDAO.updateContacto(nuevoContacto);
 				}catch(IllegalArgumentException e) {
 					System.out.println("ERROR: " + e.getMessage());
 				}
@@ -124,7 +124,7 @@ public class Main
 							}catch(IllegalArgumentException e) { System.out.println(e.getMessage());}
 							break;
 						case 6: // --- --- ---	Confirmar Cambios
-							ContactoDAO.updateContacto(updateContacto);
+							CantanteDAO.updateContacto(updateContacto);
 							break;
 						case 7: // --- --- ---	Cancelar Operación
 							System.out.println("Operación cancelada. Volviendo al Menú Principal ...");
@@ -143,7 +143,7 @@ public class Main
 					System.out.println("Contacto Elegido = " + deleteContacto);
 					boolean toDelete = Common.booleanCheck("Está seguro de que desea eliminar este Contacto? (SI/NO)",entrada);
 					if(toDelete) {
-						ContactoDAO.deleteContacto(deleteContacto);
+						CantanteDAO.deleteContacto(deleteContacto);
 					}else {
 						System.out.println("Operación cancelada. Volviendo al Menú Principal ...");
 					}
